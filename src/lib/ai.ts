@@ -1,5 +1,4 @@
-import { createOpenAI } from '@ai-sdk/openai';
-import { generateText } from 'ai';
+import OpenAI from 'openai';
 import type { RoastRequest, RoastReport, SocialPlatform } from '@/types';
 
 // 平台信息映射
@@ -18,18 +17,17 @@ const intensityMap = {
   spicy: '地狱笑话级别',
 };
 
-function getDeepSeekClient() {
+function getDeepSeekClient(): OpenAI {
   const apiKey = process.env.DEEPSEEK_API_KEY;
-  const baseURL = process.env.DEEPSEEK_BASE_URL || 'https://api.deepseek.com/v1';
+  const baseURL = process.env.DEEPSEEK_BASE_URL || 'https://api.deepseek.com';
 
   if (!apiKey || apiKey === 'your_deepseek_api_key_here') {
     throw new Error('请配置 DEEPSEEK_API_KEY 环境变量');
   }
 
-  return createOpenAI({
+  return new OpenAI({
     apiKey,
     baseURL,
-    name: 'deepseek',
   });
 }
 
@@ -76,14 +74,18 @@ function buildRoastPrompt(request: RoastRequest): string {
 
 /** 调用 DeepSeek 生成吐槽报告 */
 export async function generateRoastReport(request: RoastRequest): Promise<RoastReport> {
-  const deepseek = getDeepSeekClient();
+  const client = getDeepSeekClient();
 
-  const { text } = await generateText({
-    model: deepseek('deepseek-chat'),
-    prompt: buildRoastPrompt(request),
+  const response = await client.chat.completions.create({
+    model: 'deepseek-chat',
+    messages: [
+      { role: 'user', content: buildRoastPrompt(request) },
+    ],
     temperature: 0.9,
-    maxOutputTokens: 1000,
+    max_tokens: 1000,
   });
+
+  const text = response.choices[0]?.message?.content || '';
 
   // 解析 AI 返回的 JSON
   let result: {
