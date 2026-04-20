@@ -20,7 +20,7 @@ const intensityMap = {
 
 function getDeepSeekClient() {
   const apiKey = process.env.DEEPSEEK_API_KEY;
-  const baseURL = process.env.DEEPSEEK_BASE_URL || 'https://api.deepseek.com';
+  const baseURL = process.env.DEEPSEEK_BASE_URL || 'https://api.deepseek.com/v1';
 
   if (!apiKey || apiKey === 'your_deepseek_api_key_here') {
     throw new Error('请配置 DEEPSEEK_API_KEY 环境变量');
