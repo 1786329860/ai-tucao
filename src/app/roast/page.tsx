@@ -17,6 +17,7 @@ const loadingMessages = [
 export default function RoastPage() {
   const [selectedPlatform, setSelectedPlatform] = useState<SocialPlatform | null>(null);
   const [username, setUsername] = useState('');
+  const [bio, setBio] = useState('');
   const [intensity, setIntensity] = useState<'mild' | 'medium' | 'spicy'>('medium');
   const [loading, setLoading] = useState(false);
   const [loadingMsgIndex, setLoadingMsgIndex] = useState(0);
@@ -47,6 +48,7 @@ export default function RoastPage() {
         body: JSON.stringify({
           platform: selectedPlatform,
           username: username.trim(),
+          bio: bio.trim(),
           intensity,
         }),
       });
@@ -64,7 +66,7 @@ export default function RoastPage() {
       clearInterval(msgTimer);
       setLoading(false);
     }
-  }, [selectedPlatform, username, intensity]);
+  }, [selectedPlatform, username, bio, intensity]);
 
   /** 下载分享卡片 */
   const handleDownloadCard = useCallback(async () => {
@@ -317,10 +319,10 @@ export default function RoastPage() {
               </div>
             </div>
 
-            {/* 步骤2：输入用户名 */}
+            {/* 步骤2：输入用户名和简介 */}
             <div className="glass-card p-6">
               <h2 className="text-lg font-semibold mb-4">
-                ② 输入用户名
+                ② 输入用户名和主页简介
               </h2>
               <input
                 type="text"
@@ -331,10 +333,17 @@ export default function RoastPage() {
                 }
                 disabled={!selectedPlatform}
                 className="w-full px-4 py-3 rounded-xl bg-[#0a0a0f] border border-[#2a2a3e] text-white placeholder-gray-600 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 disabled:opacity-50 transition-all"
-                onKeyDown={(e) => e.key === 'Enter' && handleRoast()}
+              />
+              <textarea
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+                placeholder="粘贴你的主页简介/个性签名（可选，但能让吐槽更精准）"
+                disabled={!selectedPlatform}
+                rows={3}
+                className="w-full mt-3 px-4 py-3 rounded-xl bg-[#0a0a0f] border border-[#2a2a3e] text-white placeholder-gray-600 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 disabled:opacity-50 transition-all resize-none"
               />
               <p className="text-xs text-gray-600 mt-2">
-                只需要公开主页的用户名，无需登录授权
+                💡 建议粘贴主页简介，AI 会结合简介内容生成更精准的吐槽
               </p>
             </div>
 

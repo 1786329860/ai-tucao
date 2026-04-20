@@ -16,6 +16,7 @@ export interface PlatformInfo {
 export interface RoastRequest {
   platform: SocialPlatform;
   username: string;
+  bio?: string;
   intensity?: 'mild' | 'medium' | 'spicy';
 }
 

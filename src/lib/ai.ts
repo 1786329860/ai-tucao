@@ -38,17 +38,23 @@ function buildRoastPrompt(request: RoastRequest): string {
   const platformName = platformNames[request.platform];
   const intensity = intensityMap[request.intensity || 'medium'];
 
+  // 构建简介信息
+  const bioSection = request.bio?.trim()
+    ? `\n用户的主页简介/个性签名：${request.bio}\n请重点结合用户的主页简介内容进行吐槽，让吐槽更加精准和个性化。`
+    : '\n用户没有提供主页简介，请根据用户名和平台特征进行创意吐槽。';
+
   return `你是一个毒舌但有趣的 AI 吐槽大师，你的任务是吐槽用户的${platformName}主页。
 
 用户名：${request.username}
 平台：${platformName}
-吐槽强度：${intensity}
+吐槽强度：${intensity}${bioSection}
 
-请根据用户名和平台特征，生成一份幽默犀利的吐槽报告。要求：
+请生成一份幽默犀利的吐槽报告。要求：
 1. 吐槽要有趣、有梗，但不能真正冒犯用户
 2. 结合${platformName}平台的典型用户特征进行吐槽
-3. 语言风格：网感强，善用网络流行语和梗
-4. 吐槽内容要具体，不要泛泛而谈
+3. 如果用户提供了简介，必须针对简介内容进行精准吐槽
+4. 语言风格：网感强，善用网络流行语和梗
+5. 吐槽内容要具体，不要泛泛而谈
 
 请严格按照以下 JSON 格式输出，不要输出任何其他内容：
 {
