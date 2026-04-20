@@ -3,11 +3,11 @@
 # 适配 2G 内存服务器的轻量化构建
 # ============================================
 
-# 阶段1：依赖安装
+# 阶段1：安装全部依赖（含 devDependencies，构建需要）
 FROM node:20-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci --omit=dev && npm cache clean --force
+RUN npm ci && npm cache clean --force
 
 # 阶段2：构建
 FROM node:20-alpine AS builder
@@ -15,13 +15,12 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# 设置环境变量减少构建内存
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_OPTIONS="--max-old-space-size=1536"
 
 RUN npm run build
 
-# 阶段3：运行
+# 阶段3：运行（只复制生产依赖）
 FROM node:20-alpine AS runner
 WORKDIR /app
 
