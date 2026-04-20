@@ -81,7 +81,8 @@ export default function RoastPage() {
 
       if (!res.ok) throw new Error('生成卡片失败');
 
-      const blob = await res.blob();
+      const svgText = await res.text();
+      const blob = new Blob([svgText], { type: 'image/svg+xml;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;

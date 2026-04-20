@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import QRCode from 'qrcode';
 import type { RoastReport, SocialPlatform } from '@/types';
 
 const platformNames: Record<SocialPlatform, string> = {
@@ -18,9 +17,10 @@ function getScoreColor(score: number): string {
 }
 
 /** 生成分享卡片 SVG */
-function generateCardSVG(report: RoastReport, qrDataUrl: string): string {
+function generateCardSVG(report: RoastReport): string {
   const scoreColor = getScoreColor(report.score);
   const platformName = platformNames[report.platform];
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://tucao.aixiaolv.icu';
 
   const tagsHtml = report.personaTags
     .map(
@@ -40,7 +40,7 @@ function generateCardSVG(report: RoastReport, qrDataUrl: string): string {
   const summaryText = report.summary.length > 30 ? report.summary.substring(0, 30) + '...' : report.summary;
   const styleText = report.styleAnalysis.length > 50 ? report.styleAnalysis.substring(0, 50) + '...' : report.styleAnalysis;
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="800" viewBox="0 0 600 800">
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="780" viewBox="0 0 600 780">
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" style="stop-color:#0f172a"/>
@@ -49,7 +49,7 @@ function generateCardSVG(report: RoastReport, qrDataUrl: string): string {
   </defs>
 
   <!-- 背景 -->
-  <rect width="600" height="800" rx="16" fill="url(#bg)"/>
+  <rect width="600" height="780" rx="16" fill="url(#bg)"/>
 
   <!-- 顶部标题 -->
   <text x="30" y="50" font-size="20" font-weight="bold" fill="#f8fafc" font-family="system-ui, sans-serif">🔥 AI吐槽研究所</text>
@@ -85,11 +85,8 @@ function generateCardSVG(report: RoastReport, qrDataUrl: string): string {
 
   <!-- 底部 -->
   <line x1="30" y1="700" x2="570" y2="700" stroke="#334155" stroke-width="1"/>
-  <text x="30" y="730" font-size="12" fill="#64748b" font-family="system-ui, sans-serif">扫码来吐槽你的主页 👆</text>
-  <text x="570" y="730" font-size="11" fill="#475569" text-anchor="end" font-family="system-ui, sans-serif">tucao.aixiaolv.icu</text>
-
-  <!-- 二维码 -->
-  <image href="${qrDataUrl}" x="460" y="740" width="50" height="50"/>
+  <text x="300" y="730" font-size="14" fill="#7c3aed" text-anchor="middle" font-family="system-ui, sans-serif">🔥 来吐槽你的主页 👉 ${siteUrl}</text>
+  <text x="300" y="755" font-size="11" fill="#475569" text-anchor="middle" font-family="system-ui, sans-serif">AI吐槽研究所 · 被吐槽是一种新型社交货币</text>
 </svg>`;
 }
 
@@ -101,22 +98,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: '缺少报告数据' }, { status: 400 });
     }
 
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://tucao.aixiaolv.icu';
-
-    // 生成二维码
-    const qrDataUrl = await QRCode.toDataURL(siteUrl, {
-      width: 200,
-      margin: 1,
-      color: { dark: '#000000', light: '#ffffff' },
-    });
-
     // 生成 SVG 卡片
-    const svg = generateCardSVG(report, qrDataUrl);
+    const svg = generateCardSVG(report);
 
-    // 返回 SVG 图片（浏览器可直接显示，也可右键保存）
+    // 返回 SVG 图片
     return new NextResponse(svg, {
       headers: {
-        'Content-Type': 'image/svg+xml',
+        'Content-Type': 'image/svg+xml;charset=utf-8',
         'Content-Disposition': `inline; filename="roast-${report.username}.svg"`,
       },
     });
