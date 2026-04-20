@@ -1,0 +1,57 @@
+name: 🚀 自动部署到服务器
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. 拉取代码
+      - name: 📥 拉取最新代码
+        uses: actions/checkout@v4
+
+      # 2. 通过 SSH 连接服务器并部署
+      - name: 🚀 SSH 部署
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          password: ${{ secrets.SERVER_PASS }}
+          port: ${{ secrets.SERVER_PORT || 22 }}
+          script: |
+            echo "===== 开始部署 AI吐槽研究所 ====="
+
+            # 项目目录
+            PROJECT_DIR="/opt/ai-tucao"
+
+            # 如果项目目录不存在，则克隆
+            if [ ! -d "$PROJECT_DIR" ]; then
+              echo ">>> 首次部署，克隆仓库..."
+              git clone https://github.com/1786329860/ai-tucao.git $PROJECT_DIR
+            else
+              echo ">>> 拉取最新代码..."
+              cd $PROJECT_DIR
+              git fetch origin main
+              git reset --hard origin/main
+            fi
+
+            cd $PROJECT_DIR
+
+            # 如果 .env 不存在，从 .env.example 复制
+            if [ ! -f ".env" ]; then
+              cp .env.example .env
+              echo ">>> 已创建 .env 文件，请手动填入 DEEPSEEK_API_KEY"
+            fi
+
+            # 使用 Docker Compose 重新构建并启动
+            echo ">>> 重新构建并启动容器..."
+            docker compose up -d --build
+
+            # 清理旧镜像释放磁盘空间
+            echo ">>> 清理旧镜像..."
+            docker image prune -f
+
+            echo "===== 部署完成 ====="

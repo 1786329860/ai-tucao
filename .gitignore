@@ -1,0 +1,22 @@
+# 依赖
+node_modules/
+
+# Next.js 构建产物
+.next/
+out/
+
+# 环境变量（包含 API 密钥，绝不能提交）
+.env
+.env.local
+.env.production
+
+# Docker
+*.log
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/

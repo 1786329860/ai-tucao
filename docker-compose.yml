@@ -1,0 +1,31 @@
+# ============================================
+# AI吐槽研究所 - Docker Compose 配置
+# ============================================
+
+services:
+  ai-tucao:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ai-tucao
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+    mem_limit: 1g          # 限制内存使用，给系统和其他服务留空间
+    memswap_limit: 1g
+    cpus: 1.5              # 限制 CPU 使用
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
