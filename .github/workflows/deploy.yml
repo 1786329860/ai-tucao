@@ -21,7 +21,9 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           password: ${{ secrets.SERVER_PASS }}
           port: ${{ secrets.SERVER_PORT || 22 }}
+          command_timeout: 20m
           script: |
+            set -e
             echo "===== 开始部署 AI吐槽研究所 ====="
 
             # 项目目录
@@ -48,7 +50,18 @@ jobs:
 
             # 使用 Docker Compose 重新构建并启动
             echo ">>> 重新构建并启动容器..."
-            docker compose up -d --build
+            docker compose up -d --build 2>&1
+
+            # 验证容器是否正常运行
+            echo ">>> 验证容器状态..."
+            sleep 3
+            if docker ps | grep -q ai-tucao; then
+              echo ">>> ✅ 容器运行正常"
+            else
+              echo ">>> ❌ 容器启动失败，查看日志："
+              docker logs ai-tucao 2>&1 || true
+              exit 1
+            fi
 
             # 清理旧镜像释放磁盘空间
             echo ">>> 清理旧镜像..."
