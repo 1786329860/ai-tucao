@@ -82,15 +82,20 @@ export default function RoastPage() {
       if (!res.ok) throw new Error('生成卡片失败');
 
       const svgText = await res.text();
-      const blob = new Blob([svgText], { type: 'image/svg+xml;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `AI吐槽-${report.username}.svg`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      // 在新标签页打开 SVG，用户可以右键保存
+      const newWindow = window.open('', '_blank');
+      if (newWindow) {
+        newWindow.document.write(`
+          <!DOCTYPE html>
+          <html>
+          <head><title>AI吐槽-${report.username}</title>
+          <style>body{margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;background:#1a1a2e;}</style>
+          </head>
+          <body>${svgText}</body>
+          </html>
+        `);
+        newWindow.document.close();
+      }
     } catch {
       setError('生成分享卡片失败，请稍后重试');
     }
@@ -254,7 +259,7 @@ export default function RoastPage() {
                 onClick={handleDownloadCard}
                 className="btn-primary flex-1 flex items-center justify-center gap-2"
               >
-                📥 下载分享卡片
+                🖼️ 查看分享卡片
               </button>
               <button
                 onClick={handleReset}
