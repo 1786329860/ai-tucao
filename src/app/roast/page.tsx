@@ -68,7 +68,7 @@ export default function RoastPage() {
     }
   }, [selectedPlatform, username, bio, intensity]);
 
-  /** 下载分享卡片 */
+  /** 下载分享卡片（SVG 转 PNG 后下载） */
   const handleDownloadCard = useCallback(async () => {
     if (!report) return;
 
@@ -82,15 +82,46 @@ export default function RoastPage() {
       if (!res.ok) throw new Error('生成卡片失败');
 
       const svgText = await res.text();
-      const blob = new Blob([svgText], { type: 'image/svg+xml;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `AI吐槽-${report.username}.svg`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+
+      // 将 SVG 转为 PNG
+      const svgBlob = new Blob([svgText], { type: 'image/svg+xml;charset=utf-8' });
+      const svgUrl = URL.createObjectURL(svgBlob);
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = () => reject(new Error('图片加载失败'));
+        img.src = svgUrl;
+      });
+
+      // 创建 Canvas 绘制图片
+      const scale = 2; // 2倍清晰度
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth * scale;
+      canvas.height = img.naturalHeight * scale;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('Canvas 不可用');
+      ctx.scale(scale, scale);
+      ctx.drawImage(img, 0, 0);
+
+      URL.revokeObjectURL(svgUrl);
+
+      // 导出为 PNG 并下载
+      canvas.toBlob((blob) => {
+        if (!blob) {
+          setError('生成图片失败');
+          return;
+        }
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `AI吐槽-${report.username}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }, 'image/png');
     } catch {
       setError('生成分享卡片失败，请稍后重试');
     }
