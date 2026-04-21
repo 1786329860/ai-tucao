@@ -59,7 +59,7 @@ function buildRoastPrompt(request: RoastRequest): string {
   "personaTags": ["标签1", "标签2", "标签3", "标签4"],
   "roastComments": ["吐槽点评1", "吐槽点评2", "吐槽点评3"],
   "styleAnalysis": "发帖风格分析，一段话",
-  "score": 37,
+  "score": 随机整数,
   "scoreComment": "评分评语",
   "summary": "一句话总结，要有梗"
 }
@@ -67,8 +67,8 @@ function buildRoastPrompt(request: RoastRequest): string {
 注意：
 - personaTags 是 3-5 个搞笑的人设标签
 - roastComments 是 3 条具体的毒舌点评
-- score 是 0-100 的整数评分（越低越搞笑）
-- scoreComment 是对评分的简短评论
+- score 是 0-100 的整数评分，必须根据用户情况给出不同分数，不要总是给同样的分数。给分参考：简介丰富有趣给高分(60-85)，简介空白或普通给低分(15-45)，有槽点给中低分(25-55)。每次评分要有变化性！
+- scoreComment 是对评分的简短评论，要与分数匹配
 - summary 是一句让人想分享的金句`;
 }
 
