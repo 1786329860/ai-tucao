@@ -43,6 +43,26 @@ export default function RootLayout({
         {/* 主内容 */}
         <main className="flex-1 pt-14">{children}</main>
 
+        {/* PV 统计埋点 */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function(){
+                var fp = localStorage.getItem('_fp');
+                if (!fp) {
+                  fp = Date.now().toString(36) + Math.random().toString(36).substring(2, 10);
+                  localStorage.setItem('_fp', fp);
+                }
+                fetch('/api/track', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ type: 'pageview', fingerprint: fp })
+                }).catch(function(){});
+              })();
+            `,
+          }}
+        />
+
         {/* 底部 */}
         <footer className="border-t border-[#2a2a3e] py-6 text-center text-sm text-gray-500">
           <p>© 2026 AI吐槽研究所 · 被吐槽，是一种新型社交货币</p>

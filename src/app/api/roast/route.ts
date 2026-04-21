@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { generateRoastReport } from '@/lib/ai';
+import { trackEvent } from '@/lib/stats';
 import type { RoastRequest } from '@/types';
 
 export async function POST(request: Request) {
@@ -39,6 +40,13 @@ export async function POST(request: Request) {
 
     // 生成吐槽报告
     const report = await generateRoastReport(body);
+
+    // 记录吐槽统计
+    trackEvent({
+      type: 'roast',
+      platform: body.platform,
+      fingerprint: body.username,
+    });
 
     return NextResponse.json({ success: true, data: report });
   } catch (error) {
